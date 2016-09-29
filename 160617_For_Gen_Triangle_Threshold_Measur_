@@ -1,0 +1,31 @@
+// First select the image you want to analyse
+// The click on run below
+// The measures appear in the Results window
+
+run("32-bit");
+close("Masked image");
+close("Original image");
+
+// Duplicate images for analysis
+run("Duplicate...", " ");
+rename("Original image");
+run("Duplicate...", " ");
+rename("Mask image");
+
+// Create the mask
+run("Gaussian Blur...", "sigma=5");
+setAutoThreshold("Triangle dark");
+run("Convert to Mask");
+run("32-bit");
+run("Divide...", "value=255");
+setThreshold(0.5, 1);
+run("NaN Background");
+
+// Apply the mask to the original image and measure
+imageCalculator("Multiply create 32-bit", "Original image","Mask image");
+rename("Masked image");
+run("Measure");
+
+// Close unwanted images
+close("Mask image");
+close("Original image");
