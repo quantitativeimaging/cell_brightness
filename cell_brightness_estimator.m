@@ -17,15 +17,30 @@
 %     because the 8-bit values may have been rescaled! But maybe not - max
 %     values of 203 (not 255) are identifiable.)
 %    ---> No! Some values go up to 600, and import as uint16
+%
+% 3. For images with really small spots:
+%     Try setting:
+%       flagSmallSpotDetection = 1; 
+%       threshParam  = 0.4; 
+%     But note this filter may not be very robust.
+%
+%    For "typical" cell images: 
+%      try setting:
+%       flagSmallSpotDetection = 0;
+%       threshParam  = 0.25; 
+%       
 
 
 % 0. Settings
 %    Settings for running this script
 
 backgroundP  = 0.25; % Set 0.25 to estimate the 25th percentile of imDat(:) as the d.c. background
-threshParam  = 0.25; % Set a value between 0 and 1. 
+threshParam  = 0.4; % Set a value between 0 and 1. 
 maskErodeRad = 4;   % Might need an erosion filter - set radius here
 erodeStrel   = strel('disk',maskErodeRad); 
+diamSmooth   = 3;
+
+flagSmallSpotDetection = 1; % set to 1 to use an aggressive ROI filter
 
 % 1. Input
 % (a) User specifies target folder
@@ -56,15 +71,24 @@ listNames      = cell(numberOfFiles, 1);
 for lpIm = 1:numberOfFiles
     imDat = imread([PathName,listOfFiles(lpIm).name]);
     
+    % Apply aggressive smoothing filter + later erode filter
+    if(flagSmallSpotDetection)
+      imDat = conv2(double(imDat),ones(diamSmooth)./(diamSmooth^2),'same');
+    end
+      
     imMax = max(imDat(:));
     imMin = min(imDat(:));
     imBG  = quantile(imDat(:), backgroundP);
     imTh  = imBG + threshParam * (imMax - imBG);
     
     imMsk = (imDat > imTh);
+    if(flagSmallSpotDetection) % Apply aggressive erode filter
+      imMsk = imerode(imMsk, erodeStrel);
+    end    
+    
     imCut = imDat;
     imCut(not(imMsk)) = 0;
-    figure(1)
+    figure
     imagesc(imCut);
     colormap(gray)
     drawnow;
