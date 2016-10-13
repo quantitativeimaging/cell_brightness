@@ -61,6 +61,7 @@ listMin        = -ones(numberOfFiles, 1); % Min pixel value in imDat
 listBGestimate = -ones(numberOfFiles, 1); % DC background level estimate
 listThresh     = -ones(numberOfFiles, 1); % Identified threshold;
 listStdev      = -ones(numberOfFiles, 1); % Identified variation;
+listSignal     = -ones(numberOfFiles, 1); % Brightness minus background
 
 listNames      = cell(numberOfFiles, 1);
 
@@ -104,6 +105,7 @@ for lpIm = 1:numberOfFiles
     listBGestimate(lpIm) = imBG;
     listThresh(lpIm)     = imTh;
     listStdev(lpIm)      = imSt;
+    listSignal(lpIm)     = imBr - imBG;
     
     listNames{lpIm}      = listOfFiles(lpIm).name;
 end
